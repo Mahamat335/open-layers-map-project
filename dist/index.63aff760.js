@@ -549,6 +549,7 @@ var _geom = require("ol/geom");
 var _polygon = require("ol/geom/Polygon");
 var _sphere = require("ol/sphere");
 var _proj = require("ol/proj");
+var _control = require("ol/control");
 const geodesicStyle = new (0, _style.Style)({
     geometry: function(feature) {
         return feature.get("modifyGeometry") || feature.getGeometry();
@@ -701,8 +702,12 @@ function addInteractions() {
     addInteractions();
 };
 addInteractions();
+var typeControl = new (0, _control.Control)({
+    element: typeSelect
+});
+map.addControl(typeControl);
 
-},{"ol/format/GeoJSON":"1bsdX","ol/Map":"14YFC","ol/layer/Vector":"iTrAy","ol/source/Vector":"9w7Fr","ol/View":"8xbkS","ol/style":"hEQxF","ol/interaction":"akCDO","ol/geom":"8Nc7o","ol/geom/Polygon":"cJuQF","ol/sphere":"eJjHw","ol/proj":"SznqC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1bsdX":[function(require,module,exports) {
+},{"ol/format/GeoJSON":"1bsdX","ol/Map":"14YFC","ol/layer/Vector":"iTrAy","ol/source/Vector":"9w7Fr","ol/View":"8xbkS","ol/style":"hEQxF","ol/interaction":"akCDO","ol/geom":"8Nc7o","ol/geom/Polygon":"cJuQF","ol/sphere":"eJjHw","ol/proj":"SznqC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","ol/control":"6Pehg"}],"1bsdX":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _featureJs = require("../Feature.js");

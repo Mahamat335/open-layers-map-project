@@ -9,6 +9,7 @@ import {GeometryCollection, Point, Polygon} from 'ol/geom';
 import {circular} from 'ol/geom/Polygon';
 import {getDistance} from 'ol/sphere';
 import {transform} from 'ol/proj';
+import {Control, defaults as defaultControls} from 'ol/control';
 
 const geodesicStyle = new Style({
   geometry: function (feature) {
@@ -181,3 +182,9 @@ typeSelect.onchange = function () {
 };
 
 addInteractions();
+
+var typeControl = new Control({
+  element: typeSelect
+});
+
+map.addControl(typeControl);
