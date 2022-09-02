@@ -25,12 +25,32 @@
       padding: 0;
       margin:0;
     }
+    #type {
+      /* margin-left: 50px; */
+      margin-top: 10px;
+      background-color: #003c8880;
+      color: #fff;
+      border-color: #999;
+    }
+    #deniz-button {
+      margin-left: 50px;
+    }
+    .buttons{
+      margin-top: 10px;
+      background-color: #003c8880;
+      color: #fff;
+      border-color: #999;
+      border-style: solid;
+      border-width: 1px;
+      border-radius: 4px;
+    }
   </style>
 </head>
 
 <body>
+  <script type="module" src="main.js"></script>
   <div id="map-container" class="map-container"></div>
-  <form class="form-inline">
+  <form class="form-inline" >
     <label for="type">Geometry type &nbsp;</label>
     <select id="type">
       <option value="Point">Point</option>
@@ -40,7 +60,12 @@
       <option value="Geodesic" selected>Geodesic Circle</option>
     </select>
   </form>
-  <script type="module" src="main.js"></script>
+  <button id="deniz-button" class="buttons">Toggle Seas</button>
+  <button id="goller-button" class="buttons">Toggle Lakes</button>
+  <button id="iller-button" class="buttons">Toggle Cities</button>
+  <button id="ilceler-button" class="buttons">Toggle Provinces</button>
+
+  
 </body>
 
 </html>

@@ -583,29 +583,132 @@ const style = new (0, _style.Style)({
         })
     })
 });
+var maxExtent = [
+    24,
+    34,
+    47,
+    44
+];
+var centerpos = [
+    29,
+    45.5
+];
+var newpos = (0, _proj.transform)(centerpos, "EPSG:4326", "EPSG:900913");
 const source = new (0, _vectorDefault1.default)({
     format: new (0, _geoJSONDefault.default)(),
-    url: "./data/countries.json",
+    url: "./data/Turkey_detay.json",
     style: function(feature) {
         const geometry = feature.getGeometry();
         return geometry.getType() === "GeometryCollection" ? geodesicStyle : style;
     }
 });
+/* const map = new Map({
+  target: 'map-container',
+  layers: [
+    new VectorLayer({
+      source: source,
+    }),
+  ],
+  view: new View({
+        extent: transformExtent(maxExtent, 'EPSG:4326', 'EPSG:900913'),
+        projection : 'EPSG:900913', // OSM projection
+        center : newpos,
+        minZoom:3,
+        zoom: 3
+  }),
+}); */ /////////////
+const deniz = document.getElementById("deniz-button");
+const gol = document.getElementById("goller-button");
+const il = document.getElementById("iller-button");
+const ilce = document.getElementById("ilceler-button");
+deniz.onclick = function() {
+    denizLayer.setVisible(!denizLayer.getVisible());
+};
+gol.onclick = function() {
+    gollerLayer.setVisible(!gollerLayer.getVisible());
+};
+ilce.onclick = function() {
+    ilcelerLayer.setVisible(!ilcelerLayer.getVisible());
+};
+il.onclick = function() {
+    illerLayer.setVisible(!illerLayer.getVisible());
+};
+// get ref to div element - OpenLayers will render into this div
+/* const mapElement = useRef(); */ /* var tileLayer = new TileLayer({ source: new OSM() }) */ var denizLayer = new (0, _vectorDefault.default)({
+    source: new (0, _vectorDefault1.default)({
+        format: new (0, _geoJSONDefault.default)(),
+        url: "./data/Deniz_region.json"
+    }),
+    style: new (0, _style.Style)({
+        fill: new (0, _style.Fill)({
+            color: "#006994"
+        })
+    })
+});
+var gollerLayer = new (0, _vectorDefault.default)({
+    source: new (0, _vectorDefault1.default)({
+        format: new (0, _geoJSONDefault.default)(),
+        url: "./data/Goller_region.json"
+    }),
+    style: new (0, _style.Style)({
+        fill: new (0, _style.Fill)({
+            color: "#4BB6EF"
+        })
+    })
+});
+var ilcelerLayer = new (0, _vectorDefault.default)({
+    source: new (0, _vectorDefault1.default)({
+        format: new (0, _geoJSONDefault.default)(),
+        url: "./data/Ilceler_region.json"
+    })
+});
+var illerLayer = new (0, _vectorDefault.default)({
+    source: new (0, _vectorDefault1.default)({
+        format: new (0, _geoJSONDefault.default)(),
+        url: "./data/Iller_region.json"
+    })
+});
+var turkeyLayer = new (0, _vectorDefault.default)({
+    source: source
+});
 const map = new (0, _mapDefault.default)({
     target: "map-container",
     layers: [
-        new (0, _vectorDefault.default)({
-            source: source
-        }), 
+        // USGS Topo
+        turkeyLayer,
+        denizLayer,
+        illerLayer,
+        ilcelerLayer,
+        gollerLayer, 
     ],
     view: new (0, _viewDefault.default)({
-        center: [
-            0,
-            0
-        ],
-        zoom: 2
+        extent: (0, _proj.transformExtent)(maxExtent, "EPSG:4326", "EPSG:900913"),
+        projection: "EPSG:900913",
+        center: newpos,
+        minZoom: 3,
+        zoom: 3
     })
 });
+//what happens when first rendered  
+/* useEffect(() => {
+    map.setTarget(mapElement.current); */ map.addControl(new (0, _control.Control)({
+    element: deniz
+}));
+map.addControl(new (0, _control.Control)({
+    element: gol
+}));
+map.addControl(new (0, _control.Control)({
+    element: il
+}));
+map.addControl(new (0, _control.Control)({
+    element: ilce
+}));
+/* 
+  }); */ denizLayer.setVisible(false);
+gollerLayer.setVisible(false);
+illerLayer.setVisible(false);
+ilcelerLayer.setVisible(false);
+//////////////
 const defaultStyle = new (0, _interaction.Modify)({
     source: source
 }).getOverlay().getStyleFunction();
