@@ -12,6 +12,12 @@ import {transform} from 'ol/proj';
 import {Control, defaults as defaultControls} from 'ol/control';
 import {transform} from 'ol/proj';
 import {transformExtent} from 'ol/proj';
+import { Feature } from 'ol/Feature';
+import {Fill, RegularShape, Stroke, Style, Text} from 'ol/style';
+import Circle from 'ol/geom/Circle';
+import { Feature } from "ol";
+import VectorSource from 'ol/source/Vector';
+import {fromLonLat} from 'ol/proj';
 
 const geodesicStyle = new Style({
   geometry: function (feature) {
@@ -299,3 +305,64 @@ var typeControl = new Control({
 
 map.addControl(typeControl);
 
+//Plane
+
+/* var planeStyle = new Style({
+  image: new RegularShape({
+    stroke: new Stroke({color: 'black', width: 2}),
+    points: 4,
+    radius: 5,
+    radius2: 1,
+    angle: 0,
+  }),
+}); */
+/* 
+var plane = new Feature({
+  geometry: new Polygon([39,39]),
+});
+plane.setStyle(planeStyle); */
+/* var plane1=new Circle([39,39], 4000);
+plane1.setStyle(planeStyle);
+map.addFeature(plane1); */
+var centerLongitudeLatitude = fromLonLat([39, 39]);
+console.log(transform(centerLongitudeLatitude, "EPSG:3857","EPSG:4326"));
+var cember = new Circle(centerLongitudeLatitude, 4000);
+//var cember1 = new Circle(centerLongitudeLatitude, 4000);
+var cemberSource =new VectorSource({
+  projection: 'EPSG:4326',
+  features: [new Feature(cember)]
+});
+var layer = new VectorLayer({
+  source: cemberSource,
+  style: [
+    new Style({
+      stroke: new Stroke({
+        color: 'blue',
+        width: 3
+      }),
+      fill: new Fill({
+        color: 'rgba(0, 0, 255, 0.1)'
+      })
+    })
+  ]
+});
+map.addLayer(layer);
+//cemberSource.addFeature(new Feature(cember1));
+const izler = [];
+const interval = setInterval(() => {
+   if(1){
+      let iz = new Feature(new Circle(cember.getCenter, 4000));
+      
+      cemberSource.addFeature(iz);
+  }else{
+  }
+  
+  /*
+  cemberSource.clear();
+  cemberSource.addFeature(new Feature(cember));
+  cemberSource.addFeatures(izler); */
+  let coord = transform(cember.getCenter(), "EPSG:3857","EPSG:4326"); // transform(cember.getCoordinates(), "EPSG:3857","EPSG:4326"); 
+  coord[0]-=0.01;
+  cember.setCenter(transform(coord, "EPSG:4326","EPSG:3857"));
+  
+}, 500);
