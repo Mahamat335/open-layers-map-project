@@ -18,6 +18,13 @@ import Circle from 'ol/geom/Circle';
 import { Feature } from "ol";
 import VectorSource from 'ol/source/Vector';
 import {fromLonLat} from 'ol/proj';
+import { Feature } from 'ol/Feature';
+import {Fill, RegularShape, Stroke, Style, Text} from 'ol/style';
+import Circle from 'ol/geom/Circle';
+import { Feature } from "ol";
+import VectorSource from 'ol/source/Vector';
+import {fromLonLat} from 'ol/proj';
+import Fill from 'ol/style/Fill';
 
 const geodesicStyle = new Style({
   geometry: function (feature) {
@@ -67,23 +74,6 @@ const source = new VectorSource({
   },
 });
 
-/* const map = new Map({
-  target: 'map-container',
-  layers: [
-    new VectorLayer({
-      source: source,
-    }),
-  ],
-  view: new View({
-        extent: transformExtent(maxExtent, 'EPSG:4326', 'EPSG:900913'),
-        projection : 'EPSG:900913', // OSM projection
-        center : newpos,
-        minZoom:3,
-        zoom: 3
-  }),
-}); */
-
-/////////////
 const deniz = document.getElementById("deniz-button");
 const gol = document.getElementById("goller-button");
 const il = document.getElementById("iller-button");
@@ -103,9 +93,6 @@ ilce.onclick = function(){
 il.onclick = function(){
   illerLayer.setVisible(!illerLayer.getVisible())
 }
-// get ref to div element - OpenLayers will render into this div
-/* const mapElement = useRef(); */
-  /* var tileLayer = new TileLayer({ source: new OSM() }) */
   var denizLayer = new VectorLayer({
     source: new VectorSource({
       format: new GeoJSON(),
@@ -160,10 +147,6 @@ il.onclick = function(){
       zoom: 3
     }),
   });
-  
-  //what happens when first rendered  
-  /* useEffect(() => {
-    map.setTarget(mapElement.current); */
     map.addControl(new Control({
       element:deniz
     }));
@@ -176,13 +159,10 @@ il.onclick = function(){
     map.addControl(new Control({
       element:ilce
     }));
-    /* 
-  }); */
   denizLayer.setVisible(false);
   gollerLayer.setVisible(false);
   illerLayer.setVisible(false);
   ilcelerLayer.setVisible(false);
-//////////////
 const defaultStyle = new Modify({source: source})
   .getOverlay()
   .getStyleFunction();
@@ -200,8 +180,6 @@ const modify = new Modify({
         const projection = map.getView().getProjection();
         let first, last, radius;
         if (modifyPoint[0] === center[0] && modifyPoint[1] === center[1]) {
-          // center is being modified
-          // get unchanged radius from diameter between polygon vertices
           first = transform(polygon[0], projection, 'EPSG:4326');
           last = transform(
             polygon[(polygon.length - 1) / 2],
@@ -210,12 +188,10 @@ const modify = new Modify({
           );
           radius = getDistance(first, last) / 2;
         } else {
-          // radius is being modified
           first = transform(center, projection, 'EPSG:4326');
           last = transform(modifyPoint, projection, 'EPSG:4326');
           radius = getDistance(first, last);
         }
-        // update the polygon using new center or radius
         const circle = circular(
           transform(center, projection, 'EPSG:4326'),
           radius,
@@ -223,7 +199,7 @@ const modify = new Modify({
         );
         circle.transform('EPSG:4326', projection);
         geometries[0].setCoordinates(circle.getCoordinates());
-        // save changes to be applied at the end of the interaction
+        
         modifyGeometry.setGeometries(geometries);
       }
     });
@@ -252,11 +228,17 @@ modify.on('modifyend', function (event) {
 
 map.addInteraction(modify);
 
-let draw, snap; // global so we can remove them later
-const typeSelect = document.getElementById('type');
+var value;
+let draw, snap; 
+const PointButton = document.getElementById('Point');
+const LineStringButton = document.getElementById('LineString');
+const PolygonButton = document.getElementById('Polygon');
+const CircleButton = document.getElementById('Circle');
+const GeodesicButton = document.getElementById('Geodesic');
 
 function addInteractions() {
-  let value = typeSelect.value;
+  if(!value)
+    return 0;
   let geometryFunction;
   if (value === 'Geodesic') {
     value = 'Circle';
@@ -288,49 +270,50 @@ function addInteractions() {
   map.addInteraction(snap);
 }
 
-/**
- * Handle change event.
- */
-typeSelect.onchange = function () {
+PointButton.onclick = function(){
+  value = "Point";
   map.removeInteraction(draw);
   map.removeInteraction(snap);
   addInteractions();
-};
+}
+LineStringButton.onclick = function(){
+  value = "LineString";
+  map.removeInteraction(draw);
+  map.removeInteraction(snap);
+  addInteractions();
+}
+PolygonButton.onclick = function(){
+  value = "Polygon";
+  map.removeInteraction(draw);
+  map.removeInteraction(snap);
+  addInteractions();
+}
+CircleButton.onclick = function(){
+  value = "Circle";
+  map.removeInteraction(draw);
+  map.removeInteraction(snap);
+  addInteractions();
+}
+GeodesicButton.onclick = function(){
+  value = "Geodesic";
+  map.removeInteraction(draw);
+  map.removeInteraction(snap);
+  addInteractions();
+}
 
 addInteractions();
+map.addControl(new Control({element: PointButton}));
+map.addControl(new Control({element: PolygonButton}));
+map.addControl(new Control({element: LineStringButton}));
+map.addControl(new Control({element: CircleButton}));
+map.addControl(new Control({element: GeodesicButton}));
 
-var typeControl = new Control({
-  element: typeSelect
-});
+//var centerLongitudeLatitude = fromLonLat([39, 39]);
+//console.log(transform(centerLongitudeLatitude, "EPSG:3857","EPSG:4326"));
 
-map.addControl(typeControl);
-
-//Plane
-
-/* var planeStyle = new Style({
-  image: new RegularShape({
-    stroke: new Stroke({color: 'black', width: 2}),
-    points: 4,
-    radius: 5,
-    radius2: 1,
-    angle: 0,
-  }),
-}); */
-/* 
-var plane = new Feature({
-  geometry: new Polygon([39,39]),
-});
-plane.setStyle(planeStyle); */
-/* var plane1=new Circle([39,39], 4000);
-plane1.setStyle(planeStyle);
-map.addFeature(plane1); */
-var centerLongitudeLatitude = fromLonLat([39, 39]);
-console.log(transform(centerLongitudeLatitude, "EPSG:3857","EPSG:4326"));
-var cember = new Circle(centerLongitudeLatitude, 4000);
-//var cember1 = new Circle(centerLongitudeLatitude, 4000);
 var cemberSource =new VectorSource({
-  projection: 'EPSG:4326',
-  features: [new Feature(cember)]
+  projection: 'EPSG:4326'
+  
 });
 var layer = new VectorLayer({
   source: cemberSource,
@@ -347,22 +330,85 @@ var layer = new VectorLayer({
   ]
 });
 map.addLayer(layer);
-//cemberSource.addFeature(new Feature(cember1));
-const izler = [];
+const ucaklar = [];
+const yonler = [];
+const izlerUcak = [];
+const etiketler = [];
+for(let i = 0; i<1500; i++){
+  ucaklar.push(new Feature(new Circle(fromLonLat([34, 39]), 400)));
+  etiketler.push(new Feature(new Circle(fromLonLat([34, 39]), 0)));
+  etiketler[i].setStyle(new Style({
+    
+    text: new Text({
+      text: i.toString(),
+      //scale: 0.5,
+      fill: new Fill({
+        color: '#000000'
+      }),
+      stroke: new Stroke({
+        color: '#FFFF99',
+        width: 3.5
+      })
+    })
+  }));
+  yonler.push(Math.random());
+  yonler.push((Math.random())*-1);
+  izlerUcak.push([]);
+}
 const interval = setInterval(() => {
-   if(1){
-      let iz = new Feature(new Circle(cember.getCenter, 4000));
+  
+  
+  for(let i = 0; i<ucaklar.length; i++){
+
+    etiketler[i].getGeometry().setCenter(ucaklar[i].getGeometry().getCenter());
+    let izUcak = new Feature(new Circle(ucaklar[i].getGeometry().getCenter(), 100));
+    izlerUcak[i].push(izUcak);
+    if(izlerUcak[i].length>4){
+      izlerUcak[i].shift();
       
-      cemberSource.addFeature(iz);
-  }else{
+      izlerUcak[i][0].setStyle(new Style({
+        stroke: new Stroke({
+          color: 'blue',
+          width: 1
+        }),
+        fill: new Fill({
+          color: 'rgba(0, 255, 0, 0.1)'
+        })
+      }));
+      izlerUcak[i][1].setStyle(new Style({
+        stroke: new Stroke({
+          color: 'blue',
+          width: 2
+        }),
+        fill: new Fill({
+          color: 'rgba(0, 255, 0, 0.1)'
+        })
+      }));
+     }
+
+    let coord = transform(ucaklar[i].getGeometry().getCenter(), "EPSG:3857","EPSG:4326"); 
+    if(coord[0]<26||coord[0]>45)
+      yonler[i*2]*=-1;
+      
+    
+    if(coord[1]<36||coord[1]>42)
+      yonler[i*2+1]*=-1;
+    
+      if(i%2){
+        coord[0]+=yonler[i*2];
+        coord[1]-=yonler[i*2+1];
+      }else{
+        coord[0]-=yonler[i*2];
+        coord[1]+=yonler[i*2+1];
+      }
+    
+    
+    ucaklar[i].getGeometry().setCenter(transform(coord, "EPSG:4326","EPSG:3857"));
   }
-  
-  /*
   cemberSource.clear();
-  cemberSource.addFeature(new Feature(cember));
-  cemberSource.addFeatures(izler); */
-  let coord = transform(cember.getCenter(), "EPSG:3857","EPSG:4326"); // transform(cember.getCoordinates(), "EPSG:3857","EPSG:4326"); 
-  coord[0]-=0.01;
-  cember.setCenter(transform(coord, "EPSG:4326","EPSG:3857"));
-  
-}, 500);
+  cemberSource.addFeatures(ucaklar);
+  cemberSource.addFeatures(etiketler);
+  for(let i = 0; i<ucaklar.length; i++){
+    cemberSource.addFeatures(izlerUcak[i]);
+  }
+}, 750);

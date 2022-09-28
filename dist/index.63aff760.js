@@ -550,11 +550,17 @@ var _polygon = require("ol/geom/Polygon");
 var _sphere = require("ol/sphere");
 var _proj = require("ol/proj");
 var _control = require("ol/control");
+var _feature = require("ol/Feature");
+var _circle = require("ol/geom/Circle");
+var _circleDefault = parcelHelpers.interopDefault(_circle);
+var _ol = require("ol");
+var _fill = require("ol/style/Fill");
+var _fillDefault = parcelHelpers.interopDefault(_fill);
 const geodesicStyle = new (0, _style.Style)({
     geometry: function(feature) {
         return feature.get("modifyGeometry") || feature.getGeometry();
     },
-    fill: new (0, _style.Fill)({
+    fill: new (0, _fillDefault.default)({
         color: "rgba(0, 255, 255, 0.2)"
     }),
     stroke: new (0, _style.Stroke)({
@@ -563,13 +569,13 @@ const geodesicStyle = new (0, _style.Style)({
     }),
     image: new (0, _style.Circle)({
         radius: 7,
-        fill: new (0, _style.Fill)({
+        fill: new (0, _fillDefault.default)({
             color: "rgba(255, 255, 0, 0)"
         })
     })
 });
 const style = new (0, _style.Style)({
-    fill: new (0, _style.Fill)({
+    fill: new (0, _fillDefault.default)({
         color: "rgba(255, 255, 255, 0.2)"
     }),
     stroke: new (0, _style.Stroke)({
@@ -578,7 +584,7 @@ const style = new (0, _style.Style)({
     }),
     image: new (0, _style.Circle)({
         radius: 7,
-        fill: new (0, _style.Fill)({
+        fill: new (0, _fillDefault.default)({
             color: "#aacc33"
         })
     })
@@ -602,21 +608,6 @@ const source = new (0, _vectorDefault1.default)({
         return geometry.getType() === "GeometryCollection" ? geodesicStyle : style;
     }
 });
-/* const map = new Map({
-  target: 'map-container',
-  layers: [
-    new VectorLayer({
-      source: source,
-    }),
-  ],
-  view: new View({
-        extent: transformExtent(maxExtent, 'EPSG:4326', 'EPSG:900913'),
-        projection : 'EPSG:900913', // OSM projection
-        center : newpos,
-        minZoom:3,
-        zoom: 3
-  }),
-}); */ /////////////
 const deniz = document.getElementById("deniz-button");
 const gol = document.getElementById("goller-button");
 const il = document.getElementById("iller-button");
@@ -633,14 +624,13 @@ ilce.onclick = function() {
 il.onclick = function() {
     illerLayer.setVisible(!illerLayer.getVisible());
 };
-// get ref to div element - OpenLayers will render into this div
-/* const mapElement = useRef(); */ /* var tileLayer = new TileLayer({ source: new OSM() }) */ var denizLayer = new (0, _vectorDefault.default)({
+var denizLayer = new (0, _vectorDefault.default)({
     source: new (0, _vectorDefault1.default)({
         format: new (0, _geoJSONDefault.default)(),
         url: "./data/Deniz_region.json"
     }),
     style: new (0, _style.Style)({
-        fill: new (0, _style.Fill)({
+        fill: new (0, _fillDefault.default)({
             color: "#006994"
         })
     })
@@ -651,7 +641,7 @@ var gollerLayer = new (0, _vectorDefault.default)({
         url: "./data/Goller_region.json"
     }),
     style: new (0, _style.Style)({
-        fill: new (0, _style.Fill)({
+        fill: new (0, _fillDefault.default)({
             color: "#4BB6EF"
         })
     })
@@ -689,9 +679,7 @@ const map = new (0, _mapDefault.default)({
         zoom: 3
     })
 });
-//what happens when first rendered  
-/* useEffect(() => {
-    map.setTarget(mapElement.current); */ map.addControl(new (0, _control.Control)({
+map.addControl(new (0, _control.Control)({
     element: deniz
 }));
 map.addControl(new (0, _control.Control)({
@@ -703,12 +691,10 @@ map.addControl(new (0, _control.Control)({
 map.addControl(new (0, _control.Control)({
     element: ilce
 }));
-/* 
-  }); */ denizLayer.setVisible(false);
+denizLayer.setVisible(false);
 gollerLayer.setVisible(false);
 illerLayer.setVisible(false);
 ilcelerLayer.setVisible(false);
-//////////////
 const defaultStyle = new (0, _interaction.Modify)({
     source: source
 }).getOverlay().getStyleFunction();
@@ -725,22 +711,17 @@ const modify = new (0, _interaction.Modify)({
                 const projection = map.getView().getProjection();
                 let first, last, radius;
                 if (modifyPoint[0] === center[0] && modifyPoint[1] === center[1]) {
-                    // center is being modified
-                    // get unchanged radius from diameter between polygon vertices
                     first = (0, _proj.transform)(polygon[0], projection, "EPSG:4326");
                     last = (0, _proj.transform)(polygon[(polygon.length - 1) / 2], projection, "EPSG:4326");
                     radius = (0, _sphere.getDistance)(first, last) / 2;
                 } else {
-                    // radius is being modified
                     first = (0, _proj.transform)(center, projection, "EPSG:4326");
                     last = (0, _proj.transform)(modifyPoint, projection, "EPSG:4326");
                     radius = (0, _sphere.getDistance)(first, last);
                 }
-                // update the polygon using new center or radius
                 const circle = (0, _polygon.circular)((0, _proj.transform)(center, projection, "EPSG:4326"), radius, 128);
                 circle.transform("EPSG:4326", projection);
                 geometries[0].setCoordinates(circle.getCoordinates());
-                // save changes to be applied at the end of the interaction
                 modifyGeometry.setGeometries(geometries);
             }
         });
@@ -763,10 +744,15 @@ modify.on("modifyend", function(event) {
     });
 });
 map.addInteraction(modify);
-let draw, snap; // global so we can remove them later
-const typeSelect = document.getElementById("type");
+var value;
+let draw, snap;
+const PointButton = document.getElementById("Point");
+const LineStringButton = document.getElementById("LineString");
+const PolygonButton = document.getElementById("Polygon");
+const CircleButton = document.getElementById("Circle");
+const GeodesicButton = document.getElementById("Geodesic");
 function addInteractions() {
-    let value = typeSelect.value;
+    if (!value) return 0;
     let geometryFunction;
     if (value === "Geodesic") {
         value = "Circle";
@@ -797,20 +783,147 @@ function addInteractions() {
     });
     map.addInteraction(snap);
 }
-/**
- * Handle change event.
- */ typeSelect.onchange = function() {
+PointButton.onclick = function() {
+    value = "Point";
+    map.removeInteraction(draw);
+    map.removeInteraction(snap);
+    addInteractions();
+};
+LineStringButton.onclick = function() {
+    value = "LineString";
+    map.removeInteraction(draw);
+    map.removeInteraction(snap);
+    addInteractions();
+};
+PolygonButton.onclick = function() {
+    value = "Polygon";
+    map.removeInteraction(draw);
+    map.removeInteraction(snap);
+    addInteractions();
+};
+CircleButton.onclick = function() {
+    value = "Circle";
+    map.removeInteraction(draw);
+    map.removeInteraction(snap);
+    addInteractions();
+};
+GeodesicButton.onclick = function() {
+    value = "Geodesic";
     map.removeInteraction(draw);
     map.removeInteraction(snap);
     addInteractions();
 };
 addInteractions();
-var typeControl = new (0, _control.Control)({
-    element: typeSelect
+map.addControl(new (0, _control.Control)({
+    element: PointButton
+}));
+map.addControl(new (0, _control.Control)({
+    element: PolygonButton
+}));
+map.addControl(new (0, _control.Control)({
+    element: LineStringButton
+}));
+map.addControl(new (0, _control.Control)({
+    element: CircleButton
+}));
+map.addControl(new (0, _control.Control)({
+    element: GeodesicButton
+}));
+//var centerLongitudeLatitude = fromLonLat([39, 39]);
+//console.log(transform(centerLongitudeLatitude, "EPSG:3857","EPSG:4326"));
+var cemberSource = new (0, _vectorDefault1.default)({
+    projection: "EPSG:4326"
 });
-map.addControl(typeControl);
+var layer = new (0, _vectorDefault.default)({
+    source: cemberSource,
+    style: [
+        new (0, _style.Style)({
+            stroke: new (0, _style.Stroke)({
+                color: "blue",
+                width: 3
+            }),
+            fill: new (0, _fillDefault.default)({
+                color: "rgba(0, 0, 255, 0.1)"
+            })
+        })
+    ]
+});
+map.addLayer(layer);
+const ucaklar = [];
+const yonler = [];
+const izlerUcak = [];
+const etiketler = [];
+for(let i = 0; i < 1500; i++){
+    ucaklar.push(new (0, _ol.Feature)(new (0, _circleDefault.default)((0, _proj.fromLonLat)([
+        34,
+        39
+    ]), 400)));
+    etiketler.push(new (0, _ol.Feature)(new (0, _circleDefault.default)((0, _proj.fromLonLat)([
+        34,
+        39
+    ]), 0)));
+    etiketler[i].setStyle(new (0, _style.Style)({
+        text: new (0, _style.Text)({
+            text: i.toString(),
+            //scale: 0.5,
+            fill: new (0, _fillDefault.default)({
+                color: "#000000"
+            }),
+            stroke: new (0, _style.Stroke)({
+                color: "#FFFF99",
+                width: 3.5
+            })
+        })
+    }));
+    yonler.push(Math.random());
+    yonler.push(Math.random() * -1);
+    izlerUcak.push([]);
+}
+const interval = setInterval(()=>{
+    for(let i = 0; i < ucaklar.length; i++){
+        etiketler[i].getGeometry().setCenter(ucaklar[i].getGeometry().getCenter());
+        let izUcak = new (0, _ol.Feature)(new (0, _circleDefault.default)(ucaklar[i].getGeometry().getCenter(), 100));
+        izlerUcak[i].push(izUcak);
+        if (izlerUcak[i].length > 4) {
+            izlerUcak[i].shift();
+            izlerUcak[i][0].setStyle(new (0, _style.Style)({
+                stroke: new (0, _style.Stroke)({
+                    color: "blue",
+                    width: 1
+                }),
+                fill: new (0, _fillDefault.default)({
+                    color: "rgba(0, 255, 0, 0.1)"
+                })
+            }));
+            izlerUcak[i][1].setStyle(new (0, _style.Style)({
+                stroke: new (0, _style.Stroke)({
+                    color: "blue",
+                    width: 2
+                }),
+                fill: new (0, _fillDefault.default)({
+                    color: "rgba(0, 255, 0, 0.1)"
+                })
+            }));
+        }
+        let coord = (0, _proj.transform)(ucaklar[i].getGeometry().getCenter(), "EPSG:3857", "EPSG:4326");
+        if (coord[0] < 26 || coord[0] > 45) yonler[i * 2] *= -1;
+        if (coord[1] < 36 || coord[1] > 42) yonler[i * 2 + 1] *= -1;
+        if (i % 2) {
+            coord[0] += yonler[i * 2];
+            coord[1] -= yonler[i * 2 + 1];
+        } else {
+            coord[0] -= yonler[i * 2];
+            coord[1] += yonler[i * 2 + 1];
+        }
+        ucaklar[i].getGeometry().setCenter((0, _proj.transform)(coord, "EPSG:4326", "EPSG:3857"));
+    }
+    cemberSource.clear();
+    cemberSource.addFeatures(ucaklar);
+    cemberSource.addFeatures(etiketler);
+    for(let i1 = 0; i1 < ucaklar.length; i1++)cemberSource.addFeatures(izlerUcak[i1]);
+}, 750);
 
-},{"ol/format/GeoJSON":"1bsdX","ol/Map":"14YFC","ol/layer/Vector":"iTrAy","ol/source/Vector":"9w7Fr","ol/View":"8xbkS","ol/style":"hEQxF","ol/interaction":"akCDO","ol/geom":"8Nc7o","ol/geom/Polygon":"cJuQF","ol/sphere":"eJjHw","ol/proj":"SznqC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","ol/control":"6Pehg"}],"1bsdX":[function(require,module,exports) {
+},{"ol/format/GeoJSON":"1bsdX","ol/Map":"14YFC","ol/layer/Vector":"iTrAy","ol/source/Vector":"9w7Fr","ol/View":"8xbkS","ol/style":"hEQxF","ol/interaction":"akCDO","ol/geom":"8Nc7o","ol/geom/Polygon":"cJuQF","ol/sphere":"eJjHw","ol/proj":"SznqC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","ol/control":"6Pehg","ol":"3a1E4","ol/geom/Circle":"7Crtc","ol/Feature":"liabO","ol/style/Fill":"4fB56"}],"1bsdX":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _featureJs = require("../Feature.js");
@@ -30425,7 +30538,7 @@ var _styleJsDefault = parcelHelpers.interopDefault(_styleJs);
 var _textJs = require("./style/Text.js");
 var _textJsDefault = parcelHelpers.interopDefault(_textJs);
 
-},{"./style/Circle.js":"cSS3Y","./style/Fill.js":"4fB56","./style/Icon.js":"dJiIs","./style/IconImage.js":"8WrYM","./style/Image.js":"eyoR9","./style/RegularShape.js":"44xDg","./style/Stroke.js":"5Cq04","./style/Style.js":"fW7vC","./style/Text.js":false,"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dJiIs":[function(require,module,exports) {
+},{"./style/Circle.js":"cSS3Y","./style/Fill.js":"4fB56","./style/Icon.js":"dJiIs","./style/IconImage.js":"8WrYM","./style/Image.js":"eyoR9","./style/RegularShape.js":"44xDg","./style/Stroke.js":"5Cq04","./style/Style.js":"fW7vC","./style/Text.js":"dwGM6","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dJiIs":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
@@ -31313,7 +31426,427 @@ var __extends = undefined && undefined.__extends || function() {
 }((0, _targetJsDefault.default));
 exports.default = ImageBase;
 
-},{"./events/Target.js":"7T5Yi","./events/EventType.js":"hrQJ6","./util.js":"pLBjQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"liv8a":[function(require,module,exports) {
+},{"./events/Target.js":"7T5Yi","./events/EventType.js":"hrQJ6","./util.js":"pLBjQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dwGM6":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+/**
+ * @module ol/style/Text
+ */ var _fillJs = require("./Fill.js");
+var _fillJsDefault = parcelHelpers.interopDefault(_fillJs);
+var _textPlacementJs = require("./TextPlacement.js");
+var _textPlacementJsDefault = parcelHelpers.interopDefault(_textPlacementJs);
+var _sizeJs = require("../size.js");
+/**
+ * The default fill color to use if no fill was set at construction time; a
+ * blackish `#333`.
+ *
+ * @const {string}
+ */ var DEFAULT_FILL_COLOR = "#333";
+/**
+ * @typedef {Object} Options
+ * @property {string} [font] Font style as CSS 'font' value, see:
+ * https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/font. Default is '10px sans-serif'
+ * @property {number} [maxAngle=Math.PI/4] When `placement` is set to `'line'`, allow a maximum angle between adjacent characters.
+ * The expected value is in radians, and the default is 45° (`Math.PI / 4`).
+ * @property {number} [offsetX=0] Horizontal text offset in pixels. A positive will shift the text right.
+ * @property {number} [offsetY=0] Vertical text offset in pixels. A positive will shift the text down.
+ * @property {boolean} [overflow=false] For polygon labels or when `placement` is set to `'line'`, allow text to exceed
+ * the width of the polygon at the label position or the length of the path that it follows.
+ * @property {import("./TextPlacement.js").default|string} [placement='point'] Text placement.
+ * @property {number|import("../size.js").Size} [scale] Scale.
+ * @property {boolean} [rotateWithView=false] Whether to rotate the text with the view.
+ * @property {number} [rotation=0] Rotation in radians (positive rotation clockwise).
+ * @property {string} [text] Text content.
+ * @property {string} [textAlign] Text alignment. Possible values: 'left', 'right', 'center', 'end' or 'start'.
+ * Default is 'center' for `placement: 'point'`. For `placement: 'line'`, the default is to let the renderer choose a
+ * placement where `maxAngle` is not exceeded.
+ * @property {string} [textBaseline='middle'] Text base line. Possible values: 'bottom', 'top', 'middle', 'alphabetic',
+ * 'hanging', 'ideographic'.
+ * @property {import("./Fill.js").default} [fill] Fill style. If none is provided, we'll use a dark fill-style (#333).
+ * @property {import("./Stroke.js").default} [stroke] Stroke style.
+ * @property {import("./Fill.js").default} [backgroundFill] Fill style for the text background when `placement` is
+ * `'point'`. Default is no fill.
+ * @property {import("./Stroke.js").default} [backgroundStroke] Stroke style for the text background  when `placement`
+ * is `'point'`. Default is no stroke.
+ * @property {Array<number>} [padding=[0, 0, 0, 0]] Padding in pixels around the text for decluttering and background. The order of
+ * values in the array is `[top, right, bottom, left]`.
+ */ /**
+ * @classdesc
+ * Set text style for vector features.
+ * @api
+ */ var Text = /** @class */ function() {
+    /**
+     * @param {Options} [opt_options] Options.
+     */ function Text(opt_options) {
+        var options = opt_options || {};
+        /**
+         * @private
+         * @type {string|undefined}
+         */ this.font_ = options.font;
+        /**
+         * @private
+         * @type {number|undefined}
+         */ this.rotation_ = options.rotation;
+        /**
+         * @private
+         * @type {boolean|undefined}
+         */ this.rotateWithView_ = options.rotateWithView;
+        /**
+         * @private
+         * @type {number|import("../size.js").Size|undefined}
+         */ this.scale_ = options.scale;
+        /**
+         * @private
+         * @type {import("../size.js").Size}
+         */ this.scaleArray_ = (0, _sizeJs.toSize)(options.scale !== undefined ? options.scale : 1);
+        /**
+         * @private
+         * @type {string|undefined}
+         */ this.text_ = options.text;
+        /**
+         * @private
+         * @type {string|undefined}
+         */ this.textAlign_ = options.textAlign;
+        /**
+         * @private
+         * @type {string|undefined}
+         */ this.textBaseline_ = options.textBaseline;
+        /**
+         * @private
+         * @type {import("./Fill.js").default}
+         */ this.fill_ = options.fill !== undefined ? options.fill : new (0, _fillJsDefault.default)({
+            color: DEFAULT_FILL_COLOR
+        });
+        /**
+         * @private
+         * @type {number}
+         */ this.maxAngle_ = options.maxAngle !== undefined ? options.maxAngle : Math.PI / 4;
+        /**
+         * @private
+         * @type {import("./TextPlacement.js").default|string}
+         */ this.placement_ = options.placement !== undefined ? options.placement : (0, _textPlacementJsDefault.default).POINT;
+        /**
+         * @private
+         * @type {boolean}
+         */ this.overflow_ = !!options.overflow;
+        /**
+         * @private
+         * @type {import("./Stroke.js").default}
+         */ this.stroke_ = options.stroke !== undefined ? options.stroke : null;
+        /**
+         * @private
+         * @type {number}
+         */ this.offsetX_ = options.offsetX !== undefined ? options.offsetX : 0;
+        /**
+         * @private
+         * @type {number}
+         */ this.offsetY_ = options.offsetY !== undefined ? options.offsetY : 0;
+        /**
+         * @private
+         * @type {import("./Fill.js").default}
+         */ this.backgroundFill_ = options.backgroundFill ? options.backgroundFill : null;
+        /**
+         * @private
+         * @type {import("./Stroke.js").default}
+         */ this.backgroundStroke_ = options.backgroundStroke ? options.backgroundStroke : null;
+        /**
+         * @private
+         * @type {Array<number>}
+         */ this.padding_ = options.padding === undefined ? null : options.padding;
+    }
+    /**
+     * Clones the style.
+     * @return {Text} The cloned style.
+     * @api
+     */ Text.prototype.clone = function() {
+        var scale = this.getScale();
+        return new Text({
+            font: this.getFont(),
+            placement: this.getPlacement(),
+            maxAngle: this.getMaxAngle(),
+            overflow: this.getOverflow(),
+            rotation: this.getRotation(),
+            rotateWithView: this.getRotateWithView(),
+            scale: Array.isArray(scale) ? scale.slice() : scale,
+            text: this.getText(),
+            textAlign: this.getTextAlign(),
+            textBaseline: this.getTextBaseline(),
+            fill: this.getFill() ? this.getFill().clone() : undefined,
+            stroke: this.getStroke() ? this.getStroke().clone() : undefined,
+            offsetX: this.getOffsetX(),
+            offsetY: this.getOffsetY(),
+            backgroundFill: this.getBackgroundFill() ? this.getBackgroundFill().clone() : undefined,
+            backgroundStroke: this.getBackgroundStroke() ? this.getBackgroundStroke().clone() : undefined,
+            padding: this.getPadding()
+        });
+    };
+    /**
+     * Get the `overflow` configuration.
+     * @return {boolean} Let text overflow the length of the path they follow.
+     * @api
+     */ Text.prototype.getOverflow = function() {
+        return this.overflow_;
+    };
+    /**
+     * Get the font name.
+     * @return {string|undefined} Font.
+     * @api
+     */ Text.prototype.getFont = function() {
+        return this.font_;
+    };
+    /**
+     * Get the maximum angle between adjacent characters.
+     * @return {number} Angle in radians.
+     * @api
+     */ Text.prototype.getMaxAngle = function() {
+        return this.maxAngle_;
+    };
+    /**
+     * Get the label placement.
+     * @return {import("./TextPlacement.js").default|string} Text placement.
+     * @api
+     */ Text.prototype.getPlacement = function() {
+        return this.placement_;
+    };
+    /**
+     * Get the x-offset for the text.
+     * @return {number} Horizontal text offset.
+     * @api
+     */ Text.prototype.getOffsetX = function() {
+        return this.offsetX_;
+    };
+    /**
+     * Get the y-offset for the text.
+     * @return {number} Vertical text offset.
+     * @api
+     */ Text.prototype.getOffsetY = function() {
+        return this.offsetY_;
+    };
+    /**
+     * Get the fill style for the text.
+     * @return {import("./Fill.js").default} Fill style.
+     * @api
+     */ Text.prototype.getFill = function() {
+        return this.fill_;
+    };
+    /**
+     * Determine whether the text rotates with the map.
+     * @return {boolean|undefined} Rotate with map.
+     * @api
+     */ Text.prototype.getRotateWithView = function() {
+        return this.rotateWithView_;
+    };
+    /**
+     * Get the text rotation.
+     * @return {number|undefined} Rotation.
+     * @api
+     */ Text.prototype.getRotation = function() {
+        return this.rotation_;
+    };
+    /**
+     * Get the text scale.
+     * @return {number|import("../size.js").Size|undefined} Scale.
+     * @api
+     */ Text.prototype.getScale = function() {
+        return this.scale_;
+    };
+    /**
+     * Get the symbolizer scale array.
+     * @return {import("../size.js").Size} Scale array.
+     */ Text.prototype.getScaleArray = function() {
+        return this.scaleArray_;
+    };
+    /**
+     * Get the stroke style for the text.
+     * @return {import("./Stroke.js").default} Stroke style.
+     * @api
+     */ Text.prototype.getStroke = function() {
+        return this.stroke_;
+    };
+    /**
+     * Get the text to be rendered.
+     * @return {string|undefined} Text.
+     * @api
+     */ Text.prototype.getText = function() {
+        return this.text_;
+    };
+    /**
+     * Get the text alignment.
+     * @return {string|undefined} Text align.
+     * @api
+     */ Text.prototype.getTextAlign = function() {
+        return this.textAlign_;
+    };
+    /**
+     * Get the text baseline.
+     * @return {string|undefined} Text baseline.
+     * @api
+     */ Text.prototype.getTextBaseline = function() {
+        return this.textBaseline_;
+    };
+    /**
+     * Get the background fill style for the text.
+     * @return {import("./Fill.js").default} Fill style.
+     * @api
+     */ Text.prototype.getBackgroundFill = function() {
+        return this.backgroundFill_;
+    };
+    /**
+     * Get the background stroke style for the text.
+     * @return {import("./Stroke.js").default} Stroke style.
+     * @api
+     */ Text.prototype.getBackgroundStroke = function() {
+        return this.backgroundStroke_;
+    };
+    /**
+     * Get the padding for the text.
+     * @return {Array<number>} Padding.
+     * @api
+     */ Text.prototype.getPadding = function() {
+        return this.padding_;
+    };
+    /**
+     * Set the `overflow` property.
+     *
+     * @param {boolean} overflow Let text overflow the path that it follows.
+     * @api
+     */ Text.prototype.setOverflow = function(overflow) {
+        this.overflow_ = overflow;
+    };
+    /**
+     * Set the font.
+     *
+     * @param {string|undefined} font Font.
+     * @api
+     */ Text.prototype.setFont = function(font) {
+        this.font_ = font;
+    };
+    /**
+     * Set the maximum angle between adjacent characters.
+     *
+     * @param {number} maxAngle Angle in radians.
+     * @api
+     */ Text.prototype.setMaxAngle = function(maxAngle) {
+        this.maxAngle_ = maxAngle;
+    };
+    /**
+     * Set the x offset.
+     *
+     * @param {number} offsetX Horizontal text offset.
+     * @api
+     */ Text.prototype.setOffsetX = function(offsetX) {
+        this.offsetX_ = offsetX;
+    };
+    /**
+     * Set the y offset.
+     *
+     * @param {number} offsetY Vertical text offset.
+     * @api
+     */ Text.prototype.setOffsetY = function(offsetY) {
+        this.offsetY_ = offsetY;
+    };
+    /**
+     * Set the text placement.
+     *
+     * @param {import("./TextPlacement.js").default|string} placement Placement.
+     * @api
+     */ Text.prototype.setPlacement = function(placement) {
+        this.placement_ = placement;
+    };
+    /**
+     * Set whether to rotate the text with the view.
+     *
+     * @param {boolean} rotateWithView Rotate with map.
+     * @api
+     */ Text.prototype.setRotateWithView = function(rotateWithView) {
+        this.rotateWithView_ = rotateWithView;
+    };
+    /**
+     * Set the fill.
+     *
+     * @param {import("./Fill.js").default} fill Fill style.
+     * @api
+     */ Text.prototype.setFill = function(fill) {
+        this.fill_ = fill;
+    };
+    /**
+     * Set the rotation.
+     *
+     * @param {number|undefined} rotation Rotation.
+     * @api
+     */ Text.prototype.setRotation = function(rotation) {
+        this.rotation_ = rotation;
+    };
+    /**
+     * Set the scale.
+     *
+     * @param {number|import("../size.js").Size|undefined} scale Scale.
+     * @api
+     */ Text.prototype.setScale = function(scale) {
+        this.scale_ = scale;
+        this.scaleArray_ = (0, _sizeJs.toSize)(scale !== undefined ? scale : 1);
+    };
+    /**
+     * Set the stroke.
+     *
+     * @param {import("./Stroke.js").default} stroke Stroke style.
+     * @api
+     */ Text.prototype.setStroke = function(stroke) {
+        this.stroke_ = stroke;
+    };
+    /**
+     * Set the text.
+     *
+     * @param {string|undefined} text Text.
+     * @api
+     */ Text.prototype.setText = function(text) {
+        this.text_ = text;
+    };
+    /**
+     * Set the text alignment.
+     *
+     * @param {string|undefined} textAlign Text align.
+     * @api
+     */ Text.prototype.setTextAlign = function(textAlign) {
+        this.textAlign_ = textAlign;
+    };
+    /**
+     * Set the text baseline.
+     *
+     * @param {string|undefined} textBaseline Text baseline.
+     * @api
+     */ Text.prototype.setTextBaseline = function(textBaseline) {
+        this.textBaseline_ = textBaseline;
+    };
+    /**
+     * Set the background fill.
+     *
+     * @param {import("./Fill.js").default} fill Fill style.
+     * @api
+     */ Text.prototype.setBackgroundFill = function(fill) {
+        this.backgroundFill_ = fill;
+    };
+    /**
+     * Set the background stroke.
+     *
+     * @param {import("./Stroke.js").default} stroke Stroke style.
+     * @api
+     */ Text.prototype.setBackgroundStroke = function(stroke) {
+        this.backgroundStroke_ = stroke;
+    };
+    /**
+     * Set the padding (`[top, right, bottom, left]`).
+     *
+     * @param {!Array<number>} padding Padding.
+     * @api
+     */ Text.prototype.setPadding = function(padding) {
+        this.padding_ = padding;
+    };
+    return Text;
+}();
+exports.default = Text;
+
+},{"./Fill.js":"4fB56","./TextPlacement.js":"cVBZj","../size.js":"lKEPe","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"liv8a":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
@@ -36207,6 +36740,93 @@ var _polygonJsDefault = parcelHelpers.interopDefault(_polygonJs);
 var _simpleGeometryJs = require("./geom/SimpleGeometry.js");
 var _simpleGeometryJsDefault = parcelHelpers.interopDefault(_simpleGeometryJs);
 
-},{"./geom/Circle.js":"7Crtc","./geom/Geometry.js":"4ya62","./geom/GeometryCollection.js":"fDMaj","./geom/LinearRing.js":"jg1hj","./geom/LineString.js":"jLUiq","./geom/MultiLineString.js":"030lt","./geom/MultiPoint.js":"k4LcJ","./geom/MultiPolygon.js":"2XIqx","./geom/Point.js":"hx2Ar","./geom/Polygon.js":"cJuQF","./geom/SimpleGeometry.js":"hLwk3","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["1JEHZ","adjPd"], "adjPd", "parcelRequire3b24")
+},{"./geom/Circle.js":"7Crtc","./geom/Geometry.js":"4ya62","./geom/GeometryCollection.js":"fDMaj","./geom/LinearRing.js":"jg1hj","./geom/LineString.js":"jLUiq","./geom/MultiLineString.js":"030lt","./geom/MultiPoint.js":"k4LcJ","./geom/MultiPolygon.js":"2XIqx","./geom/Point.js":"hx2Ar","./geom/Polygon.js":"cJuQF","./geom/SimpleGeometry.js":"hLwk3","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3a1E4":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+/**
+ * @module ol
+ */ parcelHelpers.export(exports, "AssertionError", ()=>(0, _assertionErrorJsDefault.default));
+parcelHelpers.export(exports, "Collection", ()=>(0, _collectionJsDefault.default));
+parcelHelpers.export(exports, "Disposable", ()=>(0, _disposableJsDefault.default));
+parcelHelpers.export(exports, "Feature", ()=>(0, _featureJsDefault.default));
+parcelHelpers.export(exports, "Geolocation", ()=>(0, _geolocationJsDefault.default));
+parcelHelpers.export(exports, "Graticule", ()=>(0, _graticuleJsDefault.default));
+parcelHelpers.export(exports, "Image", ()=>(0, _imageJsDefault.default));
+parcelHelpers.export(exports, "ImageBase", ()=>(0, _imageBaseJsDefault.default));
+parcelHelpers.export(exports, "ImageCanvas", ()=>(0, _imageCanvasJsDefault.default));
+parcelHelpers.export(exports, "ImageTile", ()=>(0, _imageTileJsDefault.default));
+parcelHelpers.export(exports, "Kinetic", ()=>(0, _kineticJsDefault.default));
+parcelHelpers.export(exports, "Map", ()=>(0, _mapJsDefault.default));
+parcelHelpers.export(exports, "MapBrowserEvent", ()=>(0, _mapBrowserEventJsDefault.default));
+parcelHelpers.export(exports, "MapBrowserEventHandler", ()=>(0, _mapBrowserEventHandlerJsDefault.default));
+parcelHelpers.export(exports, "MapEvent", ()=>(0, _mapEventJsDefault.default));
+parcelHelpers.export(exports, "Object", ()=>(0, _objectJsDefault.default));
+parcelHelpers.export(exports, "Observable", ()=>(0, _observableJsDefault.default));
+parcelHelpers.export(exports, "Overlay", ()=>(0, _overlayJsDefault.default));
+parcelHelpers.export(exports, "PluggableMap", ()=>(0, _pluggableMapJsDefault.default));
+parcelHelpers.export(exports, "Tile", ()=>(0, _tileJsDefault.default));
+parcelHelpers.export(exports, "TileCache", ()=>(0, _tileCacheJsDefault.default));
+parcelHelpers.export(exports, "TileQueue", ()=>(0, _tileQueueJsDefault.default));
+parcelHelpers.export(exports, "TileRange", ()=>(0, _tileRangeJsDefault.default));
+parcelHelpers.export(exports, "VectorRenderTile", ()=>(0, _vectorRenderTileJsDefault.default));
+parcelHelpers.export(exports, "VectorTile", ()=>(0, _vectorTileJsDefault.default));
+parcelHelpers.export(exports, "View", ()=>(0, _viewJsDefault.default));
+parcelHelpers.export(exports, "getUid", ()=>(0, _utilJs.getUid));
+parcelHelpers.export(exports, "VERSION", ()=>(0, _utilJs.VERSION));
+var _assertionErrorJs = require("./AssertionError.js");
+var _assertionErrorJsDefault = parcelHelpers.interopDefault(_assertionErrorJs);
+var _collectionJs = require("./Collection.js");
+var _collectionJsDefault = parcelHelpers.interopDefault(_collectionJs);
+var _disposableJs = require("./Disposable.js");
+var _disposableJsDefault = parcelHelpers.interopDefault(_disposableJs);
+var _featureJs = require("./Feature.js");
+var _featureJsDefault = parcelHelpers.interopDefault(_featureJs);
+var _geolocationJs = require("./Geolocation.js");
+var _geolocationJsDefault = parcelHelpers.interopDefault(_geolocationJs);
+var _graticuleJs = require("./layer/Graticule.js");
+var _graticuleJsDefault = parcelHelpers.interopDefault(_graticuleJs);
+var _imageJs = require("./Image.js");
+var _imageJsDefault = parcelHelpers.interopDefault(_imageJs);
+var _imageBaseJs = require("./ImageBase.js");
+var _imageBaseJsDefault = parcelHelpers.interopDefault(_imageBaseJs);
+var _imageCanvasJs = require("./ImageCanvas.js");
+var _imageCanvasJsDefault = parcelHelpers.interopDefault(_imageCanvasJs);
+var _imageTileJs = require("./ImageTile.js");
+var _imageTileJsDefault = parcelHelpers.interopDefault(_imageTileJs);
+var _kineticJs = require("./Kinetic.js");
+var _kineticJsDefault = parcelHelpers.interopDefault(_kineticJs);
+var _mapJs = require("./Map.js");
+var _mapJsDefault = parcelHelpers.interopDefault(_mapJs);
+var _mapBrowserEventJs = require("./MapBrowserEvent.js");
+var _mapBrowserEventJsDefault = parcelHelpers.interopDefault(_mapBrowserEventJs);
+var _mapBrowserEventHandlerJs = require("./MapBrowserEventHandler.js");
+var _mapBrowserEventHandlerJsDefault = parcelHelpers.interopDefault(_mapBrowserEventHandlerJs);
+var _mapEventJs = require("./MapEvent.js");
+var _mapEventJsDefault = parcelHelpers.interopDefault(_mapEventJs);
+var _objectJs = require("./Object.js");
+var _objectJsDefault = parcelHelpers.interopDefault(_objectJs);
+var _observableJs = require("./Observable.js");
+var _observableJsDefault = parcelHelpers.interopDefault(_observableJs);
+var _overlayJs = require("./Overlay.js");
+var _overlayJsDefault = parcelHelpers.interopDefault(_overlayJs);
+var _pluggableMapJs = require("./PluggableMap.js");
+var _pluggableMapJsDefault = parcelHelpers.interopDefault(_pluggableMapJs);
+var _tileJs = require("./Tile.js");
+var _tileJsDefault = parcelHelpers.interopDefault(_tileJs);
+var _tileCacheJs = require("./TileCache.js");
+var _tileCacheJsDefault = parcelHelpers.interopDefault(_tileCacheJs);
+var _tileQueueJs = require("./TileQueue.js");
+var _tileQueueJsDefault = parcelHelpers.interopDefault(_tileQueueJs);
+var _tileRangeJs = require("./TileRange.js");
+var _tileRangeJsDefault = parcelHelpers.interopDefault(_tileRangeJs);
+var _vectorRenderTileJs = require("./VectorRenderTile.js");
+var _vectorRenderTileJsDefault = parcelHelpers.interopDefault(_vectorRenderTileJs);
+var _vectorTileJs = require("./VectorTile.js");
+var _vectorTileJsDefault = parcelHelpers.interopDefault(_vectorTileJs);
+var _viewJs = require("./View.js");
+var _viewJsDefault = parcelHelpers.interopDefault(_viewJs);
+var _utilJs = require("./util.js");
+
+},{"./AssertionError.js":"1MBbN","./Collection.js":"gReoh","./Disposable.js":"c0oTM","./Feature.js":"liabO","./Geolocation.js":false,"./layer/Graticule.js":false,"./Image.js":"c0Egp","./ImageBase.js":"2yGE2","./ImageCanvas.js":false,"./ImageTile.js":false,"./Kinetic.js":"aWbSH","./Map.js":"14YFC","./MapBrowserEvent.js":"32Can","./MapBrowserEventHandler.js":"b2FtY","./MapEvent.js":"1APU6","./Object.js":"1zG8z","./Observable.js":"cQ2uI","./Overlay.js":"j72Wp","./PluggableMap.js":"75npf","./Tile.js":false,"./TileCache.js":false,"./TileQueue.js":"iKkF5","./TileRange.js":false,"./VectorRenderTile.js":false,"./VectorTile.js":false,"./View.js":"8xbkS","./util.js":"pLBjQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["1JEHZ","adjPd"], "adjPd", "parcelRequire3b24")
 
 //# sourceMappingURL=index.63aff760.js.map
