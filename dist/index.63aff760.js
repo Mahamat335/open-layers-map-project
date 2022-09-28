@@ -923,7 +923,7 @@ const interval = setInterval(()=>{
     for(let i1 = 0; i1 < ucaklar.length; i1++)cemberSource.addFeatures(izlerUcak[i1]);
 }, 750);
 
-},{"ol/format/GeoJSON":"1bsdX","ol/Map":"14YFC","ol/layer/Vector":"iTrAy","ol/source/Vector":"9w7Fr","ol/View":"8xbkS","ol/style":"hEQxF","ol/interaction":"akCDO","ol/geom":"8Nc7o","ol/geom/Polygon":"cJuQF","ol/sphere":"eJjHw","ol/proj":"SznqC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","ol/control":"6Pehg","ol":"3a1E4","ol/geom/Circle":"7Crtc","ol/Feature":"liabO","ol/style/Fill":"4fB56"}],"1bsdX":[function(require,module,exports) {
+},{"ol/format/GeoJSON":"1bsdX","ol/Map":"14YFC","ol/layer/Vector":"iTrAy","ol/source/Vector":"9w7Fr","ol/View":"8xbkS","ol/style":"hEQxF","ol/interaction":"akCDO","ol/geom":"8Nc7o","ol/geom/Polygon":"cJuQF","ol/sphere":"eJjHw","ol/proj":"SznqC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","ol/control":"6Pehg","ol/Feature":"liabO","ol/geom/Circle":"7Crtc","ol":"3a1E4","ol/style/Fill":"4fB56"}],"1bsdX":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _featureJs = require("../Feature.js");
