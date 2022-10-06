@@ -698,6 +698,8 @@ ilcelerLayer.setVisible(false);
 const defaultStyle = new (0, _interaction.Modify)({
     source: source
 }).getOverlay().getStyleFunction();
+//deneme
+turkeyLayer.setZIndex(1);
 const modify = new (0, _interaction.Modify)({
     source: source,
     style: function(feature) {
@@ -853,7 +855,7 @@ const ucaklar = [];
 const yonler = [];
 const izlerUcak = [];
 const etiketler = [];
-for(let i = 0; i < 1500; i++){
+for(let i = 0; i < 15; i++){
     ucaklar.push(new (0, _ol.Feature)(new (0, _circleDefault.default)((0, _proj.fromLonLat)([
         34,
         39
@@ -906,22 +908,28 @@ const interval = setInterval(()=>{
             }));
         }
         let coord = (0, _proj.transform)(ucaklar[i].getGeometry().getCenter(), "EPSG:3857", "EPSG:4326");
+        let coordLabel = [];
+        coordLabel.push(coord[0]);
+        coordLabel.push(coord[0]);
         if (coord[0] < 26 || coord[0] > 45) yonler[i * 2] *= -1;
         if (coord[1] < 36 || coord[1] > 42) yonler[i * 2 + 1] *= -1;
         if (i % 2) {
-            coord[0] += yonler[i * 2];
-            coord[1] -= yonler[i * 2 + 1];
+            coord[0] += yonler[i * 2] / 4;
+            coord[1] -= yonler[i * 2 + 1] / 4;
         } else {
-            coord[0] -= yonler[i * 2];
-            coord[1] += yonler[i * 2 + 1];
+            coord[0] -= yonler[i * 2] / 4;
+            coord[1] += yonler[i * 2 + 1] / 4;
         }
+        coordLabel[0] = coord[0] + 0.015;
+        coordLabel[1] = coord[1] + 0.015;
         ucaklar[i].getGeometry().setCenter((0, _proj.transform)(coord, "EPSG:4326", "EPSG:3857"));
+        etiketler[i].getGeometry().setCenter((0, _proj.transform)(coordLabel, "EPSG:4326", "EPSG:3857"));
     }
     cemberSource.clear();
     cemberSource.addFeatures(ucaklar);
     cemberSource.addFeatures(etiketler);
     for(let i1 = 0; i1 < ucaklar.length; i1++)cemberSource.addFeatures(izlerUcak[i1]);
-}, 750);
+}, 4000);
 
 },{"ol/format/GeoJSON":"1bsdX","ol/Map":"14YFC","ol/layer/Vector":"iTrAy","ol/source/Vector":"9w7Fr","ol/View":"8xbkS","ol/style":"hEQxF","ol/interaction":"akCDO","ol/geom":"8Nc7o","ol/geom/Polygon":"cJuQF","ol/sphere":"eJjHw","ol/proj":"SznqC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","ol/control":"6Pehg","ol/Feature":"liabO","ol/geom/Circle":"7Crtc","ol":"3a1E4","ol/style/Fill":"4fB56"}],"1bsdX":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");

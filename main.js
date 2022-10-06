@@ -167,6 +167,9 @@ const defaultStyle = new Modify({source: source})
   .getOverlay()
   .getStyleFunction();
 
+//deneme
+turkeyLayer.setZIndex(1);
+
 const modify = new Modify({
   source: source,
   style: function (feature) {
@@ -334,7 +337,7 @@ const ucaklar = [];
 const yonler = [];
 const izlerUcak = [];
 const etiketler = [];
-for(let i = 0; i<1500; i++){
+for(let i = 0; i<15; i++){
   ucaklar.push(new Feature(new Circle(fromLonLat([34, 39]), 400)));
   etiketler.push(new Feature(new Circle(fromLonLat([34, 39]), 0)));
   etiketler[i].setStyle(new Style({
@@ -387,6 +390,9 @@ const interval = setInterval(() => {
      }
 
     let coord = transform(ucaklar[i].getGeometry().getCenter(), "EPSG:3857","EPSG:4326"); 
+    let coordLabel = [];
+    coordLabel.push(coord[0]);
+    coordLabel.push(coord[0]);
     if(coord[0]<26||coord[0]>45)
       yonler[i*2]*=-1;
       
@@ -395,15 +401,18 @@ const interval = setInterval(() => {
       yonler[i*2+1]*=-1;
     
       if(i%2){
-        coord[0]+=yonler[i*2];
-        coord[1]-=yonler[i*2+1];
+        coord[0]+=yonler[i*2]/4;
+        coord[1]-=yonler[i*2+1]/4;
       }else{
-        coord[0]-=yonler[i*2];
-        coord[1]+=yonler[i*2+1];
+        coord[0]-=yonler[i*2]/4;
+        coord[1]+=yonler[i*2+1]/4;
       }
-    
-    
+    coordLabel[0]= coord[0]+0.015;
+    coordLabel[1]= coord[1]+0.015;
+
     ucaklar[i].getGeometry().setCenter(transform(coord, "EPSG:4326","EPSG:3857"));
+    etiketler[i].getGeometry().setCenter(transform(coordLabel, "EPSG:4326","EPSG:3857"));
+    
   }
   cemberSource.clear();
   cemberSource.addFeatures(ucaklar);
@@ -411,4 +420,4 @@ const interval = setInterval(() => {
   for(let i = 0; i<ucaklar.length; i++){
     cemberSource.addFeatures(izlerUcak[i]);
   }
-}, 750);
+}, 4000);
