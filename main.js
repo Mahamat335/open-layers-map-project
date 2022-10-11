@@ -5,7 +5,7 @@ import VectorSource from 'ol/source/Vector';
 import View from 'ol/View';
 import {Circle as CircleStyle, Fill, Stroke, Style} from 'ol/style';
 import {Draw, Modify, Snap} from 'ol/interaction';
-import {GeometryCollection, Point, Polygon} from 'ol/geom';
+import {GeometryCollection, LineString, Point, Polygon} from 'ol/geom';
 import {circular} from 'ol/geom/Polygon';
 import {getDistance} from 'ol/sphere';
 import {transform} from 'ol/proj';
@@ -67,7 +67,6 @@ var newpos = transform(centerpos,'EPSG:4326','EPSG:900913');
 
 const source = new VectorSource({
   format: new GeoJSON(),
-  url: './data/Turkey_detay.json',
   style: function (feature) {
     const geometry = feature.getGeometry();
     return geometry.getType() === 'GeometryCollection' ? geodesicStyle : style;
@@ -125,6 +124,13 @@ il.onclick = function(){
   })
 
   var turkeyLayer = new VectorLayer({
+    source: new VectorSource({
+      format: new GeoJSON(),
+      url: './data/Turkey_detay.json',
+    }),
+  })
+
+  var drawLayer = new VectorLayer({
     source: source,
     
   })
@@ -138,6 +144,7 @@ il.onclick = function(){
       illerLayer,
       ilcelerLayer,
       gollerLayer,
+      drawLayer,
     ],
     view: new View({
       extent: transformExtent(maxExtent, 'EPSG:4326', 'EPSG:900913'),
@@ -168,7 +175,7 @@ const defaultStyle = new Modify({source: source})
   .getStyleFunction();
 
 //deneme
-turkeyLayer.setZIndex(1);
+drawLayer.setZIndex(1);
 
 const modify = new Modify({
   source: source,
@@ -323,7 +330,7 @@ var layer = new VectorLayer({
   style: [
     new Style({
       stroke: new Stroke({
-        color: 'blue',
+        color: 'red',
         width: 3
       }),
       fill: new Fill({
@@ -333,13 +340,25 @@ var layer = new VectorLayer({
   ]
 });
 map.addLayer(layer);
+layer.setZIndex(1);
 const ucaklar = [];
 const yonler = [];
 const izlerUcak = [];
 const etiketler = [];
+const speedVectors = [];
 for(let i = 0; i<15; i++){
   ucaklar.push(new Feature(new Circle(fromLonLat([34, 39]), 400)));
+  speedVectors.push(new Feature(new LineString([fromLonLat([34, 39]), fromLonLat([36, 39])])));
   etiketler.push(new Feature(new Circle(fromLonLat([34, 39]), 0)));
+  speedVectors[i].setStyle(new Style({
+    stroke: new Stroke({
+      color: 'red',
+      width: 1
+    }),
+    fill: new Fill({
+      color: 'rgba(0, 255, 0, 0.1)'
+    })
+  }));
   etiketler[i].setStyle(new Style({
     
     text: new Text({
@@ -371,7 +390,7 @@ const interval = setInterval(() => {
       
       izlerUcak[i][0].setStyle(new Style({
         stroke: new Stroke({
-          color: 'blue',
+          color: 'red',
           width: 1
         }),
         fill: new Fill({
@@ -380,7 +399,7 @@ const interval = setInterval(() => {
       }));
       izlerUcak[i][1].setStyle(new Style({
         stroke: new Stroke({
-          color: 'blue',
+          color: 'red',
           width: 2
         }),
         fill: new Fill({
@@ -393,6 +412,8 @@ const interval = setInterval(() => {
     let coordLabel = [];
     coordLabel.push(coord[0]);
     coordLabel.push(coord[0]);
+
+    let speedVectorPoint = [];
     if(coord[0]<26||coord[0]>45)
       yonler[i*2]*=-1;
       
@@ -403,21 +424,27 @@ const interval = setInterval(() => {
       if(i%2){
         coord[0]+=yonler[i*2]/4;
         coord[1]-=yonler[i*2+1]/4;
+
+        speedVectorPoint[0] = coord[0]+yonler[i*2];
+        speedVectorPoint[1] = coord[1]-yonler[i*2+1];
       }else{
         coord[0]-=yonler[i*2]/4;
         coord[1]+=yonler[i*2+1]/4;
+
+        speedVectorPoint[0] = coord[0]-yonler[i*2];
+        speedVectorPoint[1] = coord[1]+yonler[i*2+1];
       }
     coordLabel[0]= coord[0]+0.015;
     coordLabel[1]= coord[1]+0.015;
-
     ucaklar[i].getGeometry().setCenter(transform(coord, "EPSG:4326","EPSG:3857"));
     etiketler[i].getGeometry().setCenter(transform(coordLabel, "EPSG:4326","EPSG:3857"));
-    
+    speedVectors[i].getGeometry().setCoordinates([ucaklar[i].getGeometry().getCenter(), transform(speedVectorPoint, "EPSG:4326","EPSG:3857")]);
   }
   cemberSource.clear();
   cemberSource.addFeatures(ucaklar);
   cemberSource.addFeatures(etiketler);
+  cemberSource.addFeatures(speedVectors);
   for(let i = 0; i<ucaklar.length; i++){
     cemberSource.addFeatures(izlerUcak[i]);
   }
-}, 4000);
+}, 1000);

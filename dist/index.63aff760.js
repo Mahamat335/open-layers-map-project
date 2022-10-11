@@ -602,7 +602,6 @@ var centerpos = [
 var newpos = (0, _proj.transform)(centerpos, "EPSG:4326", "EPSG:900913");
 const source = new (0, _vectorDefault1.default)({
     format: new (0, _geoJSONDefault.default)(),
-    url: "./data/Turkey_detay.json",
     style: function(feature) {
         const geometry = feature.getGeometry();
         return geometry.getType() === "GeometryCollection" ? geodesicStyle : style;
@@ -659,6 +658,12 @@ var illerLayer = new (0, _vectorDefault.default)({
     })
 });
 var turkeyLayer = new (0, _vectorDefault.default)({
+    source: new (0, _vectorDefault1.default)({
+        format: new (0, _geoJSONDefault.default)(),
+        url: "./data/Turkey_detay.json"
+    })
+});
+var drawLayer = new (0, _vectorDefault.default)({
     source: source
 });
 const map = new (0, _mapDefault.default)({
@@ -669,7 +674,8 @@ const map = new (0, _mapDefault.default)({
         denizLayer,
         illerLayer,
         ilcelerLayer,
-        gollerLayer, 
+        gollerLayer,
+        drawLayer, 
     ],
     view: new (0, _viewDefault.default)({
         extent: (0, _proj.transformExtent)(maxExtent, "EPSG:4326", "EPSG:900913"),
@@ -699,7 +705,7 @@ const defaultStyle = new (0, _interaction.Modify)({
     source: source
 }).getOverlay().getStyleFunction();
 //deneme
-turkeyLayer.setZIndex(1);
+drawLayer.setZIndex(1);
 const modify = new (0, _interaction.Modify)({
     source: source,
     style: function(feature) {
@@ -841,7 +847,7 @@ var layer = new (0, _vectorDefault.default)({
     style: [
         new (0, _style.Style)({
             stroke: new (0, _style.Stroke)({
-                color: "blue",
+                color: "red",
                 width: 3
             }),
             fill: new (0, _fillDefault.default)({
@@ -851,19 +857,40 @@ var layer = new (0, _vectorDefault.default)({
     ]
 });
 map.addLayer(layer);
+layer.setZIndex(1);
 const ucaklar = [];
 const yonler = [];
 const izlerUcak = [];
 const etiketler = [];
+const speedVectors = [];
 for(let i = 0; i < 15; i++){
     ucaklar.push(new (0, _ol.Feature)(new (0, _circleDefault.default)((0, _proj.fromLonLat)([
         34,
         39
     ]), 400)));
+    speedVectors.push(new (0, _ol.Feature)(new (0, _geom.LineString)([
+        (0, _proj.fromLonLat)([
+            34,
+            39
+        ]),
+        (0, _proj.fromLonLat)([
+            36,
+            39
+        ])
+    ])));
     etiketler.push(new (0, _ol.Feature)(new (0, _circleDefault.default)((0, _proj.fromLonLat)([
         34,
         39
     ]), 0)));
+    speedVectors[i].setStyle(new (0, _style.Style)({
+        stroke: new (0, _style.Stroke)({
+            color: "red",
+            width: 1
+        }),
+        fill: new (0, _fillDefault.default)({
+            color: "rgba(0, 255, 0, 0.1)"
+        })
+    }));
     etiketler[i].setStyle(new (0, _style.Style)({
         text: new (0, _style.Text)({
             text: i.toString(),
@@ -890,7 +917,7 @@ const interval = setInterval(()=>{
             izlerUcak[i].shift();
             izlerUcak[i][0].setStyle(new (0, _style.Style)({
                 stroke: new (0, _style.Stroke)({
-                    color: "blue",
+                    color: "red",
                     width: 1
                 }),
                 fill: new (0, _fillDefault.default)({
@@ -899,7 +926,7 @@ const interval = setInterval(()=>{
             }));
             izlerUcak[i][1].setStyle(new (0, _style.Style)({
                 stroke: new (0, _style.Stroke)({
-                    color: "blue",
+                    color: "red",
                     width: 2
                 }),
                 fill: new (0, _fillDefault.default)({
@@ -911,25 +938,35 @@ const interval = setInterval(()=>{
         let coordLabel = [];
         coordLabel.push(coord[0]);
         coordLabel.push(coord[0]);
+        let speedVectorPoint = [];
         if (coord[0] < 26 || coord[0] > 45) yonler[i * 2] *= -1;
         if (coord[1] < 36 || coord[1] > 42) yonler[i * 2 + 1] *= -1;
         if (i % 2) {
             coord[0] += yonler[i * 2] / 4;
             coord[1] -= yonler[i * 2 + 1] / 4;
+            speedVectorPoint[0] = coord[0] + yonler[i * 2];
+            speedVectorPoint[1] = coord[1] - yonler[i * 2 + 1];
         } else {
             coord[0] -= yonler[i * 2] / 4;
             coord[1] += yonler[i * 2 + 1] / 4;
+            speedVectorPoint[0] = coord[0] - yonler[i * 2];
+            speedVectorPoint[1] = coord[1] + yonler[i * 2 + 1];
         }
         coordLabel[0] = coord[0] + 0.015;
         coordLabel[1] = coord[1] + 0.015;
         ucaklar[i].getGeometry().setCenter((0, _proj.transform)(coord, "EPSG:4326", "EPSG:3857"));
         etiketler[i].getGeometry().setCenter((0, _proj.transform)(coordLabel, "EPSG:4326", "EPSG:3857"));
+        speedVectors[i].getGeometry().setCoordinates([
+            ucaklar[i].getGeometry().getCenter(),
+            (0, _proj.transform)(speedVectorPoint, "EPSG:4326", "EPSG:3857")
+        ]);
     }
     cemberSource.clear();
     cemberSource.addFeatures(ucaklar);
     cemberSource.addFeatures(etiketler);
+    cemberSource.addFeatures(speedVectors);
     for(let i1 = 0; i1 < ucaklar.length; i1++)cemberSource.addFeatures(izlerUcak[i1]);
-}, 4000);
+}, 1000);
 
 },{"ol/format/GeoJSON":"1bsdX","ol/Map":"14YFC","ol/layer/Vector":"iTrAy","ol/source/Vector":"9w7Fr","ol/View":"8xbkS","ol/style":"hEQxF","ol/interaction":"akCDO","ol/geom":"8Nc7o","ol/geom/Polygon":"cJuQF","ol/sphere":"eJjHw","ol/proj":"SznqC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","ol/control":"6Pehg","ol/Feature":"liabO","ol/geom/Circle":"7Crtc","ol":"3a1E4","ol/style/Fill":"4fB56"}],"1bsdX":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
