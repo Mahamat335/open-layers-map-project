@@ -346,13 +346,24 @@ const yonler = [];
 const izlerUcak = [];
 const etiketler = [];
 const speedVectors = [];
-for(let i = 0; i<15; i++){
+const cizgiler = [];
+for(let i = 0; i<1500; i++){
   ucaklar.push(new Feature(new Circle(fromLonLat([34, 39]), 400)));
   speedVectors.push(new Feature(new LineString([fromLonLat([34, 39]), fromLonLat([36, 39])])));
   etiketler.push(new Feature(new Circle(fromLonLat([34, 39]), 0)));
+  cizgiler.push(new Feature(new LineString([fromLonLat([34, 39]), fromLonLat([34, 39])])));
   speedVectors[i].setStyle(new Style({
     stroke: new Stroke({
       color: 'red',
+      width: 1
+    }),
+    fill: new Fill({
+      color: 'rgba(0, 255, 0, 0.1)'
+    })
+  }));
+  cizgiler[i].setStyle(new Style({
+    stroke: new Stroke({
+      color: 'cyan',
       width: 1
     }),
     fill: new Fill({
@@ -438,13 +449,15 @@ const interval = setInterval(() => {
     coordLabel[1]= coord[1]+0.015;
     ucaklar[i].getGeometry().setCenter(transform(coord, "EPSG:4326","EPSG:3857"));
     etiketler[i].getGeometry().setCenter(transform(coordLabel, "EPSG:4326","EPSG:3857"));
+    cizgiler[i].getGeometry().setCoordinates([ucaklar[i].getGeometry().getCenter(), etiketler[i].getGeometry().getCenter()]);
     speedVectors[i].getGeometry().setCoordinates([ucaklar[i].getGeometry().getCenter(), transform(speedVectorPoint, "EPSG:4326","EPSG:3857")]);
   }
   cemberSource.clear();
   cemberSource.addFeatures(ucaklar);
   cemberSource.addFeatures(etiketler);
   cemberSource.addFeatures(speedVectors);
+  cemberSource.addFeatures(cizgiler);
   for(let i = 0; i<ucaklar.length; i++){
     cemberSource.addFeatures(izlerUcak[i]);
   }
-}, 1000);
+}, 4000);

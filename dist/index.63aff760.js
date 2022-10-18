@@ -863,7 +863,8 @@ const yonler = [];
 const izlerUcak = [];
 const etiketler = [];
 const speedVectors = [];
-for(let i = 0; i < 15; i++){
+const cizgiler = [];
+for(let i = 0; i < 1500; i++){
     ucaklar.push(new (0, _ol.Feature)(new (0, _circleDefault.default)((0, _proj.fromLonLat)([
         34,
         39
@@ -882,9 +883,28 @@ for(let i = 0; i < 15; i++){
         34,
         39
     ]), 0)));
+    cizgiler.push(new (0, _ol.Feature)(new (0, _geom.LineString)([
+        (0, _proj.fromLonLat)([
+            34,
+            39
+        ]),
+        (0, _proj.fromLonLat)([
+            34,
+            39
+        ])
+    ])));
     speedVectors[i].setStyle(new (0, _style.Style)({
         stroke: new (0, _style.Stroke)({
             color: "red",
+            width: 1
+        }),
+        fill: new (0, _fillDefault.default)({
+            color: "rgba(0, 255, 0, 0.1)"
+        })
+    }));
+    cizgiler[i].setStyle(new (0, _style.Style)({
+        stroke: new (0, _style.Stroke)({
+            color: "cyan",
             width: 1
         }),
         fill: new (0, _fillDefault.default)({
@@ -956,6 +976,10 @@ const interval = setInterval(()=>{
         coordLabel[1] = coord[1] + 0.015;
         ucaklar[i].getGeometry().setCenter((0, _proj.transform)(coord, "EPSG:4326", "EPSG:3857"));
         etiketler[i].getGeometry().setCenter((0, _proj.transform)(coordLabel, "EPSG:4326", "EPSG:3857"));
+        cizgiler[i].getGeometry().setCoordinates([
+            ucaklar[i].getGeometry().getCenter(),
+            etiketler[i].getGeometry().getCenter()
+        ]);
         speedVectors[i].getGeometry().setCoordinates([
             ucaklar[i].getGeometry().getCenter(),
             (0, _proj.transform)(speedVectorPoint, "EPSG:4326", "EPSG:3857")
@@ -965,8 +989,9 @@ const interval = setInterval(()=>{
     cemberSource.addFeatures(ucaklar);
     cemberSource.addFeatures(etiketler);
     cemberSource.addFeatures(speedVectors);
+    cemberSource.addFeatures(cizgiler);
     for(let i1 = 0; i1 < ucaklar.length; i1++)cemberSource.addFeatures(izlerUcak[i1]);
-}, 1000);
+}, 4000);
 
 },{"ol/format/GeoJSON":"1bsdX","ol/Map":"14YFC","ol/layer/Vector":"iTrAy","ol/source/Vector":"9w7Fr","ol/View":"8xbkS","ol/style":"hEQxF","ol/interaction":"akCDO","ol/geom":"8Nc7o","ol/geom/Polygon":"cJuQF","ol/sphere":"eJjHw","ol/proj":"SznqC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","ol/control":"6Pehg","ol/Feature":"liabO","ol/geom/Circle":"7Crtc","ol":"3a1E4","ol/style/Fill":"4fB56"}],"1bsdX":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
